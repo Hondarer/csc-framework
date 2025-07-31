@@ -1,59 +1,30 @@
 # pure-csc-framework
 
-Windows組み込みのcsc.exeとVSCodeを使用し、DocumentFormat.OpenXmlライブラリでExcelファイル操作を行うC#開発環境の構築手順です。
-
-## 目次
-
-1. [概要](#概要)
-2. [前提条件と環境確認](#前提条件と環境確認)
-3. [開発環境のセットアップ](#開発環境のセットアップ)
-4. [NuGetライブラリの自動取得](#nugetライブラリの自動取得)  
-5. [ビルドシステムの構築](#ビルドシステムの構築)
-6. [Excel操作プログラムの実装](#excel操作プログラムの実装)
-7. [デバッグ環境の設定](#デバッグ環境の設定)
-8. [ビルドと実行](#ビルドと実行)
-9. [ステップ実行とデバッグ手法](#ステップ実行とデバッグ手法)
-10. [プロジェクトの拡張](#プロジェクトの拡張)
-11. [トラブルシューティング](#トラブルシューティング)
-12. [まとめ](#まとめ)
-
----
+Windows 組み込みの csc.exe と VSCode を使用し、DocumentFormat.OpenXml ライブラリで Excel ファイル操作を行う C# 開発環境の構築手順です。
 
 ## 概要
 
-このガイドでは、以下の制約条件下でC#Excel操作アプリケーションを開発します：
+このガイドでは、以下の制約条件下でC#Excel操作アプリケーションを開発します。
 
 ### 制約条件
+
 - **追加インストール禁止**: Visual Studio、.NET SDK等のインストール不可
 - **Windows標準機能のみ**: 組み込みのcsc.exeとVSCodeプラグインのみ使用
 - **外部ライブラリ利用**: NuGetパッケージの手動取得と配置
 
 ### 実現する機能
-- ✅ 本格的なExcel(.xlsx)ファイルの読み書き
-- ✅ 複数シート対応
-- ✅ フルデバッグ環境（ブレークポイント、ステップ実行）
-- ✅ 自動ビルドシステム
-- ✅ プロジェクト構造の標準化
 
----
+- 本格的な Excel (.xlsx) ファイルの読み書き
+- 複数シート対応
+- フルデバッグ環境 (ブレークポイント、ステップ実行)
+- 自動ビルドシステム
+- プロジェクト構造の標準化
 
 ## 前提条件と環境確認
 
-### 1. csc.exeの確認
+### .NET Framework バージョンの確認
 
-コマンドプロンプトで以下を実行：
-
-```cmd
-where csc
-```
-
-**期待される出力例:**
-```
-C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe
-C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe
-```
-
-### 2. .NET Frameworkバージョンの確認
+コマンドプロンプトで以下を実行します。
 
 ```cmd
 dir C:\Windows\Microsoft.NET\Framework64\
@@ -61,61 +32,51 @@ dir C:\Windows\Microsoft.NET\Framework64\
 
 **必要条件:** v4.0.30319 フォルダが存在すること
 
-### 3. WindowsBase.dllの依存関係について
+### csc.exe の確認
 
-DocumentFormat.OpenXmlは以下の理由でWindowsBase.dllが必要です：
+コマンドプロンプトで以下を実行します。
 
-- **System.IO.Packaging 名前空間**: Office Open XMLのパッケージ構造操作
-- **ZIP形式ファイル処理**: .xlsxファイルの内部構造アクセス  
-- **Microsoft公式基盤**: 最適化された低レベルOffice文書操作
-
-```csharp
-// DocumentFormat.OpenXmlの内部で使用
-using System.IO.Packaging;  // ← WindowsBase.dllに含まれる
-
-// Excel .xlsxファイルはZIPベースのパッケージ形式
-Package package = Package.Open(stream, FileMode.Open, FileAccess.Read);
+```cmd
+dir C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe
 ```
 
----
+**期待される出力例:**
+
+```txt
+ C:\Windows\Microsoft.NET\Framework64\v4.0.30319 のディレクトリ
+
+2024/11/08  07:53         2,569,696 csc.exe
+               1 個のファイル           2,569,696 バイト
+               0 個のディレクトリ  1,899,705,847,808 バイトの空き領域
+```
 
 ## 開発環境のセットアップ
 
-### 1. VSCodeプラグインのインストール
+### VSCodeプラグインのインストール
 
-拡張機能タブ（`Ctrl+Shift+X`）から以下をインストール：
+拡張機能タブ (`Ctrl+Shift+X`) から以下をインストール：
 
 **必須プラグイン:**
-- `C#` (Microsoft製) - 基本的なC#サポート
-- `C# Dev Kit` (Microsoft製) - 新しいC#開発体験
+
+- `C#` (Microsoft製) - 基本的な C# サポート
+- `C# Dev Kit` (Microsoft製) - 新しい C# 開発体験
 
 **推奨プラグイン:**
-- `IntelliCode` (Microsoft製) - AI支援コード補完
+
 - `Error Lens` - エラーの可視化
 - `Bracket Pair Colorizer` - 括弧の色分け
 
-### 2. プロジェクト構造の作成
-
-```cmd
-mkdir C:\CSharpProjects
-cd C:\CSharpProjects
-mkdir ExcelApp
-cd ExcelApp
-code .
-```
-
-### 3. 基本フォルダ構造
+### 基本フォルダ構造の作成
 
 ```cmd
 mkdir bin
-mkdir lib  
-mkdir packages
 mkdir src
 mkdir .vscode
 ```
 
 **完成後の構造:**
-```
+
+```txt
 ExcelApp/
 ├── .vscode/              # VSCode設定
 ├── bin/                  # ビルド出力
@@ -130,15 +91,13 @@ ExcelApp/
 └── setup-project.bat     # 統合セットアップ
 ```
 
----
+## NuGet ライブラリの取得
 
-## NuGetライブラリの自動取得
-
-### PowerShell自動セットアップスクリプト
+### PowerShell 自動セットアップスクリプト
 
 #### `setup-libraries.ps1` の作成
 
-```powershell
+```powershell:setup-libraries.ps1
 # setup-libraries.ps1
 # NuGetパッケージの自動ダウンロードと展開スクリプト
 
@@ -205,22 +164,22 @@ $downloadPath = Join-Path $TempDir $packageFileName
 Write-Host "Downloading package from: $downloadUrl" -ForegroundColor Blue
 
 try {
-    # プログレス表示付きダウンロード
     $webClient = New-Object System.Net.WebClient
-    $webClient.DownloadProgressChanged += {
-        param($sender, $e)
-        Write-Progress -Activity "Downloading $packageFileName" -Status "$($e.ProgressPercentage)% Complete" -PercentComplete $e.ProgressPercentage
+
+    # プログレス表示
+    Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action {
+        Write-Progress -Activity "Downloading $using:packageFileName" -Status "$($EventArgs.ProgressPercentage)% Complete" -PercentComplete $EventArgs.ProgressPercentage
     }
-    
-    $webClient.DownloadFileCompleted += {
-        param($sender, $e)
-        Write-Progress -Activity "Downloading $packageFileName" -Completed
-        if ($e.Error) {
-            throw $e.Error
+
+    # 完了処理
+    Register-ObjectEvent -InputObject $webClient -EventName DownloadFileCompleted -Action {
+        Write-Progress -Activity "Downloading $using:packageFileName" -Completed
+        if ($EventArgs.Error) {
+            throw $EventArgs.Error
         }
-        Write-Host "Download completed: $downloadPath" -ForegroundColor Green
+        Write-Host "Download completed: $using:downloadPath" -ForegroundColor Green
     }
-    
+
     $webClient.DownloadFileAsync([Uri]$downloadUrl, $downloadPath)
     
     # ダウンロード完了まで待機
@@ -360,10 +319,10 @@ Write-Host "DLLs copied: $dllsCopied" -ForegroundColor White
 Write-Host "Target directory: $LibDir" -ForegroundColor White
 
 if (Test-Path (Join-Path $LibDir "$PackageName.dll")) {
-    Write-Host "✓ Setup completed successfully!" -ForegroundColor Green
+    Write-Host "Setup completed successfully!" -ForegroundColor Green
     Write-Host "You can now build your project." -ForegroundColor Green
 } else {
-    Write-Warning "⚠ Setup may not have completed successfully."
+    Write-Warning "Setup may not have completed successfully."
     Write-Host "Please check the lib directory manually." -ForegroundColor Yellow
 }
 
@@ -371,11 +330,11 @@ Write-Host "`nPress any key to continue..." -ForegroundColor Gray
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 ```
 
-#### バッチファイルからPowerShellを実行
+#### バッチファイルから PowerShell を実行
 
 #### `setup-libraries.bat` の作成
 
-```batch
+```bat:setup-libraries.bat
 @echo off
 echo === NuGet Package Setup ===
 
@@ -407,21 +366,22 @@ pause
 ### 使用方法
 
 **最も簡単な実行方法：**
+
 ```cmd
 setup-libraries.bat
 ```
 
 **PowerShell直接実行：**
+
 ```powershell
 .\setup-libraries.ps1
 ```
 
 **特定バージョン指定：**
+
 ```powershell
 .\setup-libraries.ps1 -PackageName "DocumentFormat.OpenXml" -Version "2.20.0"
 ```
-
----
 
 ## ビルドシステムの構築
 
@@ -429,7 +389,7 @@ setup-libraries.bat
 
 #### `build-debug.bat` の作成
 
-```batch
+```bat:build-debug.bat
 @echo off
 setlocal enabledelayedexpansion
 
@@ -502,7 +462,7 @@ if %ERRORLEVEL% equ 0 (
 
 #### `build-release.bat` の作成
 
-```batch
+```bat:build-release.bat
 @echo off
 setlocal enabledelayedexpansion
 
@@ -573,7 +533,7 @@ if %ERRORLEVEL% equ 0 (
 
 #### `clean.bat` の作成
 
-```batch
+```bat:clean.bat
 @echo off
 echo === Clean Build Output ===
 
@@ -588,11 +548,11 @@ if exist "bin" (
 echo Clean completed.
 ```
 
-### VSCode統合設定
+### VSCode 統合設定
 
 #### `.vscode/tasks.json` の作成
 
-```json
+```json:tasks.json
 {
     "version": "2.0.0",
     "tasks": [
@@ -657,11 +617,11 @@ echo Clean completed.
 
 ## Excel操作プログラムの実装
 
-### 1. src/ExcelHandler.cs の作成
+### src/ExcelHandler.cs の作成
 
 DocumentFormat.OpenXmlを使用したExcel操作クラス：
 
-```csharp
+```csharp:ExcelHandler.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -973,7 +933,7 @@ namespace ExcelApp
 
 メインプログラムの実装：
 
-```csharp
+```csharp:Program.cs
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1183,13 +1143,11 @@ namespace ExcelApp
 }
 ```
 
----
-
 ## デバッグ環境の設定
 
 ### `.vscode/launch.json` の作成
 
-```json
+```json:launch.json
 {
     "version": "0.2.0",
     "configurations": [
@@ -1230,28 +1188,30 @@ namespace ExcelApp
 ### デバッグ情報付きビルドの仕組み
 
 **重要なコンパイラオプション:**
+
 - `/debug+` : デバッグ情報を生成
 - `/debug:full` : 完全なデバッグ情報
 - `/optimize-` : 最適化を無効化（デバッグしやすくする）
 
 これらのオプションにより、以下が可能になります：
+
 - ブレークポイントの設置
 - 変数値の確認
 - ステップ実行
 - コールスタックの表示
 
----
-
 ## ビルドと実行
 
-### 1. 初回セットアップ
+### 初回セットアップ
 
 **統合セットアップの実行:**
+
 ```cmd
 setup-project.bat
 ```
 
 このスクリプトにより以下が自動実行されます：
+
 - 必要なディレクトリの作成
 - NuGetパッケージの自動ダウンロード
 - 基本ソースファイルのテンプレート生成
@@ -1260,9 +1220,11 @@ setup-project.bat
 ### 2. ビルド方法
 
 **VSCodeでのビルド:**
+
 - `Ctrl + Shift + B` → `build-debug` を選択
 
 **コマンドラインでのビルド:**
+
 ```cmd
 # デバッグビルド
 build-debug.bat
@@ -1277,6 +1239,7 @@ clean.bat
 ### 3. ビルド成功の確認
 
 **期待される出力:**
+
 ```
 === C# Debug Build Script ===
 Searching for csc.exe...
@@ -1290,12 +1253,15 @@ Executable: bin\build-debug.exe
 ### 4. 実行方法
 
 **デバッグ実行:**
+
 - `F5` キー（自動的にビルドしてから実行）
 
 **デバッグなし実行:**
+
 - `Ctrl + F5`
 
 **コマンドライン実行:**
+
 ```cmd
 bin\build-debug.exe
 ```
@@ -1310,8 +1276,6 @@ bin\build-debug.exe
 - `sample.xlsx` - 単一シートのExcelファイル
 - `multi_sheet_sample.xlsx` - 複数シートのExcelファイル
 
----
-
 ## ステップ実行とデバッグ手法
 
 ### 1. ブレークポイントの効果的な設置
@@ -1319,6 +1283,7 @@ bin\build-debug.exe
 #### 推奨設置箇所
 
 **データ作成フェーズ:**
+
 ```csharp
 static List<string[]> CreateSampleData()
 {
@@ -1705,13 +1670,16 @@ namespace ExcelApp.Services
 ### 1. ビルドエラーの対処
 
 #### csc.exeが見つからない場合
+
 **エラーメッセージ:**
+
 ```
 ERROR: csc.exe not found!
 Please ensure .NET Framework is installed.
 ```
 
 **解決方法:**
+
 1. .NET Frameworkのインストール確認
 2. 環境変数PATHの設定確認
 3. 手動パス指定
@@ -1722,6 +1690,7 @@ dir "C:\Windows\Microsoft.NET\Framework*\v4*\csc.exe" /s
 ```
 
 #### WindowsBase.dllが見つからない場合
+
 **エラーメッセージ:**
 ```
 error CS0006: Metadata file 'WindowsBase.dll' could not be found

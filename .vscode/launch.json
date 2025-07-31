@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Launch",
+            "type": "clr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/build-debug.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "env": {
+                "PATH": "${workspaceFolder}/lib;${env:PATH}"
+            },
+            "enableStepFiltering": true,
+            "justMyCode": true,
+            "preLaunchTask": "build-debug"
+        },
+        {
+            "name": "Release Launch",
+            "type": "clr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/build-release.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "externalTerminal",
+            "env": {
+                "PATH": "${workspaceFolder}/lib;${env:PATH}"
+            },
+            "preLaunchTask": "build-release"
+        }
+    ]
+}

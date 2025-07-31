@@ -4,7 +4,7 @@
 param(
     [string]$PackageName = "DocumentFormat.OpenXml",
     [string]$Version = "latest",
-    [string]$TargetFramework = "net462"
+    [string]$TargetFramework = "net481"
 )
 
 # 設定
@@ -226,5 +226,5 @@ if (Test-Path (Join-Path $LibDir "$PackageName.dll")) {
     Write-Host "Please check the lib directory manually." -ForegroundColor Yellow
 }
 
-Write-Host "`nPress any key to continue..." -ForegroundColor Gray
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+#Write-Host "`nPress any key to continue..." -ForegroundColor Gray
+#$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

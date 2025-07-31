@@ -47,7 +47,7 @@ set CSC_PATH=packages\Microsoft.Net.Compilers\tools\csc.exe
     /target:exe ^
     /langversion:7 ^
     /debug+ ^
-    /debug:full ^
+    /debug:portable ^
     /optimize- ^
     /out:bin\%~n0.exe ^
     /reference:lib\DocumentFormat.OpenXml.dll ^

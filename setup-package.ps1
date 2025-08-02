@@ -74,20 +74,41 @@ $downloadPath = Join-Path $TempDir $packageFileName
 Write-Host "Downloading package from: $downloadUrl"
 
 try {
-    # Invoke-WebRequest を使用した同期ダウンロード（より確実）
+    # WebClient を使用してダウンロード進捗を表示
     $progressActivity = "Downloading $packageFileName"
     
     # プログレスバーの初期表示
     Write-Progress -Activity $progressActivity -Status "Initializing..." -PercentComplete 0
     
-    # ダウンロード実行
+    # WebClient でダウンロード実行
     try {
-        Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath -UseBasicParsing -ErrorAction Stop
+        $webClient = New-Object System.Net.WebClient
+        
+        # ダウンロード進捗イベントハンドラーを登録
+        $progressHandler = {
+            param($sender, $e)
+            if ($e.TotalBytesToReceive -gt 0) {
+                $percentComplete = [math]::Round(($e.BytesReceived / $e.TotalBytesToReceive) * 100, 1)
+                $status = "Downloaded $([math]::Round($e.BytesReceived / 1MB, 2)) MB / $([math]::Round($e.TotalBytesToReceive / 1MB, 2)) MB ($percentComplete%)"
+                Write-Progress -Activity $progressActivity -Status $status -PercentComplete $percentComplete
+            }
+        }
+        
+        # イベントハンドラーを登録
+        Register-ObjectEvent -InputObject $webClient -EventName DownloadProgressChanged -Action $progressHandler | Out-Null
+        
+        # 同期ダウンロード実行
+        $webClient.DownloadFile($downloadUrl, $downloadPath)
+        
+        # イベントハンドラーをクリーンアップ
+        Get-EventSubscriber | Where-Object { $_.SourceObject -eq $webClient } | Unregister-Event
+        $webClient.Dispose()
+        
         Write-Progress -Activity $progressActivity -Status "Download completed" -PercentComplete 100 -Completed
     }
     catch [System.Net.WebException] {
         Write-Progress -Activity $progressActivity -Completed
-        if ($_.Exception.Response.StatusCode -eq 404) {
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode -eq 404) {
             throw "Package '$PackageName' version '$Version' not found on NuGet. Please check the package name and version."
         }
         else {

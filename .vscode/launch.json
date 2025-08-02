@@ -5,9 +5,9 @@
             "name": "Debug Launch",
             "type": "clr",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/build-debug.exe",
+            "program": "${workspaceFolder}/bin/debug/App.exe",
             "args": [],
-            "cwd": "${workspaceFolder}/bin",
+            "cwd": "${workspaceFolder}/bin/debug",
             "stopAtEntry": false,
             "console": "integratedTerminal",
             "env": {
@@ -15,21 +15,21 @@
             },
             "enableStepFiltering": true,
             "justMyCode": true,
-            "preLaunchTask": "build-debug"
+            "preLaunchTask": "build (debug)"
         },
         {
             "name": "Release Launch",
             "type": "clr",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/build-release.exe",
+            "program": "${workspaceFolder}/bin/release/App.exe",
             "args": [],
-            "cwd": "${workspaceFolder}/bin",
+            "cwd": "${workspaceFolder}/bin/release",
             "stopAtEntry": false,
             "console": "externalTerminal",
             "env": {
                 "PATH": "${workspaceFolder}/lib;${env:PATH}"
             },
-            "preLaunchTask": "build-release"
+            "preLaunchTask": "build (release)"
         }
     ]
 }

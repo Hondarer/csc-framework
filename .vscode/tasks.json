@@ -2,9 +2,10 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build-debug",
+            "label": "build (debug)",
             "type": "shell",
-            "command": "${workspaceFolder}\\build-debug.bat",
+            "command": "${workspaceFolder}\\build.bat",
+            "args": ["debug"],
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -22,9 +23,10 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "build-release",
+            "label": "build (release)",
             "type": "shell",
-            "command": "${workspaceFolder}\\build-release.bat",
+            "command": "${workspaceFolder}\\build.bat",
+            "args": ["release"],
             "group": "build",
             "presentation": {
                 "echo": true,
@@ -42,6 +44,22 @@
             "label": "clean",
             "type": "shell",
             "command": "${workspaceFolder}\\clean.bat",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "setup libraries",
+            "type": "shell",
+            "command": "${workspaceFolder}\\setup-libraries.bat",
             "group": "build",
             "presentation": {
                 "echo": true,

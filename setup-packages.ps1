@@ -1,11 +1,24 @@
-# setup-libraries.ps1
-# NuGetパッケージの自動ダウンロードと展開スクリプト
+# setup-packages.ps1
+# NuGet パッケージの自動ダウンロードと展開スクリプト
 
 param(
-    [string]$PackageName = "DocumentFormat.OpenXml",
+    [string]$PackageName = "",
     [string]$Version = "latest",
     [string]$TargetFramework = "net481"
 )
+
+# PackageName の必須チェック
+if ([string]::IsNullOrWhiteSpace($PackageName)) {
+    Write-Host "ERROR: PackageName is required!" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Usage: .\setup-packages.ps1 -PackageName <package-name> [-Version <version>] [-TargetFramework <framework>]" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Examples:" -ForegroundColor Yellow
+    Write-Host "  .\setup-packages.ps1 -PackageName 'DocumentFormat.OpenXml'" -ForegroundColor Cyan
+    Write-Host "  .\setup-packages.ps1 -PackageName 'Newtonsoft.Json' -Version '13.0.3'" -ForegroundColor Cyan
+    Write-Host "  .\setup-packages.ps1 -PackageName 'System.IO.Packaging' -TargetFramework 'net462'" -ForegroundColor Cyan
+    exit 1
+}
 
 # 設定
 $PackagesDir = "packages"
@@ -25,7 +38,7 @@ Write-Host "Target Framework: $TargetFramework" -ForegroundColor Cyan
     }
 }
 
-# NuGet APIからパッケージ情報を取得
+# NuGet API からパッケージ情報を取得
 function Get-LatestPackageVersion {
     param([string]$PackageName)
     
@@ -126,7 +139,7 @@ catch {
     exit 1
 }
 
-# DLLファイルの検索とコピー
+# DLL ファイルの検索とコピー
 Write-Host "Searching for DLL files..." -ForegroundColor Blue
 
 $libSearchPaths = @(
@@ -159,7 +172,7 @@ foreach ($searchPath in $libSearchPaths) {
                 $dllsCopied++
             }
             
-            # 主要なDLLが見つかったら他のパスは検索しない
+            # 主要な DLL が見つかったら他のパスは検索しない
             if ($dllFiles.Name -contains $primaryDll) {
                 Write-Host "Primary DLL found, skipping other target frameworks" -ForegroundColor Yellow
                 break

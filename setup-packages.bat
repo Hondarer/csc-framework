@@ -14,12 +14,12 @@ if %ERRORLEVEL% neq 0 (
 :: PowerShell スクリプトの実行
 echo Running PowerShell setup script...
 :: TODO: 複数パッケージのスクリプト構成やエラーハンドリングが未調整
-powershell -ExecutionPolicy Bypass -File "%~dp0setup-libraries.ps1" -PackageName "DocumentFormat.OpenXml" 
-powershell -ExecutionPolicy Bypass -File "%~dp0setup-libraries.ps1" -PackageName "DocumentFormat.OpenXml.Framework" 
-powershell -ExecutionPolicy Bypass -File "%~dp0setup-libraries.ps1" -PackageName "System.IO.Packaging" 
+powershell -ExecutionPolicy Bypass -File "%~dp0setup-packages.ps1" -PackageName "DocumentFormat.OpenXml" 
+powershell -ExecutionPolicy Bypass -File "%~dp0setup-packages.ps1" -PackageName "DocumentFormat.OpenXml.Framework" 
+powershell -ExecutionPolicy Bypass -File "%~dp0setup-packages.ps1" -PackageName "System.IO.Packaging" 
 
 :: tools 以下にものができる
-powershell -ExecutionPolicy Bypass -File "%~dp0setup-libraries.ps1" -PackageName "Microsoft.Net.Compilers" 
+powershell -ExecutionPolicy Bypass -File "%~dp0setup-packages.ps1" -PackageName "Microsoft.Net.Compilers" 
 
 if %ERRORLEVEL% equ 0 (
     echo.

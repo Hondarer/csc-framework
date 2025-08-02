@@ -230,16 +230,28 @@ namespace ExcelApp
         
         private static string GetCellValue(Cell cell, SharedStringTable sharedStringTable)
         {
+            // InlineStringの場合
+            if (cell.InlineString != null)
+            {
+                return cell.InlineString.Text?.Text ?? "";
+            }
+            
+            // CellValueがnullの場合は空文字を返す
             if (cell.CellValue == null) return "";
             
             var value = cell.CellValue.InnerXml;
             
+            // SharedStringの場合
             if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
             {
-                if (sharedStringTable != null)
+                if (sharedStringTable != null && int.TryParse(value, out int index))
                 {
-                    return sharedStringTable.ChildElements[int.Parse(value)].InnerText;
+                    if (index < sharedStringTable.ChildElements.Count)
+                    {
+                        return sharedStringTable.ChildElements[index].InnerText;
+                    }
                 }
+                return "";
             }
             
             return value;

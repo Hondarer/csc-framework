@@ -59,9 +59,6 @@ namespace ExcelApp
                 Console.WriteLine($"エラーが発生しました: {ex.Message}");
                 Console.WriteLine($"スタックトレース: {ex.StackTrace}");
             }
-            
-            Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
         }
         
         /// <summary>

@@ -57,9 +57,9 @@
             }
         },
         {
-            "label": "setup libraries",
+            "label": "setup packages",
             "type": "shell",
-            "command": "${workspaceFolder}\\setup-libraries.bat",
+            "command": "${workspaceFolder}\\setup-packages.bat",
             "group": "build",
             "presentation": {
                 "echo": true,

@@ -9,16 +9,20 @@
 ## 主要な開発コマンド
 
 ### ビルドコマンド
-- **統合ビルドスクリプト**: `build.bat [debug|release]`
-  - `build.bat` または `build.bat debug` - デバッグビルド（デフォルト）
-  - `build.bat release` - リリースビルド（最適化）
+
+- **統合ビルドスクリプト**: `build.bat [PROJECT_NAME] [debug|release]`
+  - `build.bat` - App.exeでデバッグビルド（デフォルト）
+  - `build.bat {プロジェクト名} debug` - {プロジェクト名}.exeでデバッグビルド
+  - `build.bat {プロジェクト名} release` - {プロジェクト名}.exeでリリースビルド
   - `build.bat help` - ヘルプ表示
 - **クリーン**: `clean.bat` - bin/ディレクトリのクリーンアップ
 
 ### セットアップコマンド
+
 - **ライブラリセットアップ**: `setup-libraries.bat` または `setup-libraries.ps1` - NuGetパッケージの自動ダウンロードと配置
 
 ### 特殊な設定
+
 - C# 7.0 (`/langversion:7`)を使用
 - カスタムコンパイラパス: `packages\Microsoft.Net.Compilers\tools\csc.exe`
 - WindowsBaseの参照パス: `WPF\WindowsBase.dll`
@@ -26,6 +30,7 @@
 ## アーキテクチャ
 
 ### プロジェクト構造
+
 ```
 pure-csc-framework/
 ├── src/                    # ソースコード
@@ -34,8 +39,8 @@ pure-csc-framework/
 ├── lib/                   # 実行時ライブラリ（DLL）
 ├── packages/              # NuGetパッケージ展開先
 ├── bin/                   # ビルド出力
-│   ├── debug/            # デバッグビルド出力（App.exe + DLL）
-│   └── release/          # リリースビルド出力（App.exe + DLL）
+│   ├── debug/            # デバッグビルド出力（{プロジェクト名}.exe + DLL）
+│   └── release/          # リリースビルド出力（{プロジェクト名}.exe + DLL）
 ├── .vscode/              # VSCode設定（tasks.json, launch.json）
 ├── build.bat             # 統合ビルドスクリプト
 └── setup-packages.ps1    # セットアップスクリプト
@@ -44,37 +49,44 @@ pure-csc-framework/
 ### 重要なクラス
 
 #### ExcelHandler (`src/ExcelHandler.cs`)
+
 DocumentFormat.OpenXmlを使用したExcel操作の中核クラス:
+
 - `ReadExcel()` - Excelファイルの読み込み
 - `WriteExcel()` - 単一シートへの書き込み
 - `WriteMultipleSheets()` - 複数シートへの書き込み
 - 列参照の自動計算、空セルの処理を含む
 
 #### Program (`src/Program.cs`)
+
 デモンストレーション用メインプログラム:
+
 - サンプルデータ作成
 - Excel読み書き操作
 - データ統計処理（給与計算など）
 - 複数シートサンプル生成
 
 ### 依存関係管理
+
 - **DocumentFormat.OpenXml**: Excel操作のメインライブラリ
 - **DocumentFormat.OpenXml.Framework**: フレームワーク拡張
 - **System.IO.Packaging**: パッケージング操作
 - PowerShellスクリプトによる自動NuGetパッケージ管理
 
 ### ビルドシステムの特徴
+
 1. **統合ビルドスクリプト**: 1つのbuild.batでdebug/releaseを切り替え
-2. **自動csc.exe検索**: システムパスと固定パスでコンパイラを探索
-3. **カスタムコンパイラ**: Microsoft.Net.Compilersパッケージ内のcsc.exeを使用
-4. **ポータブルPDB**: `/debug:portable`でクロスプラットフォーム対応のデバッグ情報
-5. **DLL自動コピー**: ビルド後に必要なDLLを各出力ディレクトリにコピー
-6. **フォルダ分離**: デバッグとリリースを`bin/debug/`と`bin/release/`に分離
-7. **統一実行ファイル名**: 両方とも`App.exe`
+2. **動的プロジェクト名**: VSCodeのワークスペース名から実行ファイル名を自動決定
+3. **自動csc.exe検索**: システムパスと固定パスでコンパイラを探索
+4. **カスタムコンパイラ**: Microsoft.Net.Compilersパッケージ内のcsc.exeを使用
+5. **ポータブルPDB**: `/debug:portable`でクロスプラットフォーム対応のデバッグ情報
+6. **DLL自動コピー**: ビルド後に必要なDLLを各出力ディレクトリにコピー
+7. **フォルダ分離**: デバッグとリリースを`bin/debug/`と`bin/release/`に分離
 
 ### VSCode統合
-- **tasks.json**: 統合ビルドタスクの定義（debug/release/clean/setup）
-- **launch.json**: デバッグ設定（CLR）- フォルダ分離対応、実行時cwdを実行ファイルのディレクトリに設定
+
+- **tasks.json**: 統合ビルドタスクの定義（debug/release/clean/setup）- ワークスペース名を自動的にbuild.batに渡す
+- **launch.json**: デバッグ設定（CLR）- ワークスペース名に基づく動的プログラムパス、実行時cwdを実行ファイルのディレクトリに設定
 - IntelliSenseとデバッグ機能のサポート
 
 ## 開発時の注意点
@@ -91,11 +103,13 @@ DocumentFormat.OpenXmlを使用したExcel操作の中核クラス:
 ## トラブルシューティング
 
 ### よくある問題
+
 1. **csc.exeが見つからない**: .NET Frameworkのインストール確認
 2. **DocumentFormat.OpenXml.dllが見つからない**: `setup-libraries.bat`の実行
 3. **WindowsBase.dllエラー**: パスの確認（WPF/WindowsBase.dll）
 
 ### デバッグ方法
+
 - VSCodeでF5キーによるデバッグ実行
 - ブレークポイント設置可能
 - 変数監視とステップ実行をサポート

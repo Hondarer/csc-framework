@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 :: パラメータの解析
 set BUILD_TYPE=debug
 set SHOW_HELP=false
+set PROJECT_NAME=App :: デフォルトの実行ファイル名称
 
 :parse_args
 if "%~1"=="" goto :args_parsed
@@ -32,6 +33,13 @@ if /i "%~1"=="help" (
     shift
     goto :parse_args
 )
+if not "%~1"=="" (
+    if not "%~1:~0,1%"=="-" (
+        set PROJECT_NAME=%~1
+        shift
+        goto :parse_args
+    )
+)
 echo Unknown parameter: %~1
 echo Use 'build help' for usage information.
 exit /b 1
@@ -42,7 +50,10 @@ exit /b 1
 if "%SHOW_HELP%"=="true" (
     echo === C# Build Script ===
     echo.
-    echo Usage: build [BUILD_TYPE] [OPTIONS]
+    echo Usage: build [PROJECT_NAME] [BUILD_TYPE] [OPTIONS]
+    echo.
+    echo PROJECT_NAME:
+    echo   Name of the output executable ^(default: App^)
     echo.
     echo BUILD_TYPE:
     echo   debug      Build with debug information ^(default^)
@@ -52,9 +63,9 @@ if "%SHOW_HELP%"=="true" (
     echo   -h, --help Show this help message
     echo.
     echo Examples:
-    echo   build           ^(builds debug version^)
-    echo   build debug     ^(builds debug version^)
-    echo   build release   ^(builds release version^)
+    echo   build                        ^(builds App.exe debug version^)
+    echo   build MyProject debug        ^(builds MyProject.exe debug version^)
+    echo   build MyProject release      ^(builds MyProject.exe release version^)
     echo.
     exit /b 0
 )
@@ -72,12 +83,7 @@ echo Please run setup-libraries.bat first
 exit /b 1
 
 :found_csc
-echo Found csc.exe at: !CSC_PATH!
-
-:: 出力ディレクトリの作成
-if not exist "bin" mkdir bin
-if not exist "bin\debug" mkdir bin\debug
-if not exist "bin\release" mkdir bin\release
+::echo Found csc.exe at: !CSC_PATH!
 
 :: ビルドタイプに応じた設定
 if /i "%BUILD_TYPE%"=="debug" (
@@ -92,7 +98,19 @@ if /i "%BUILD_TYPE%"=="debug" (
 
 :: 実行ファイル名の設定
 set "OUTPUT_DIR=bin\%OUTPUT_SUFFIX%"
-set "OUTPUT_NAME=%OUTPUT_DIR%\App.exe"
+set "OUTPUT_NAME=%OUTPUT_DIR%\%PROJECT_NAME%.exe"
+
+:: 出力ディレクトリの作成
+if not exist "bin" mkdir bin
+if not exist "bin\%OUTPUT_SUFFIX%" mkdir bin\%OUTPUT_SUFFIX%
+
+:: libフォルダ内のDLLファイルから参照リストを動的生成
+set "LIB_REFERENCES="
+if exist "lib\*.dll" (
+    for %%f in (lib\*.dll) do (
+        set "LIB_REFERENCES=!LIB_REFERENCES! /reference:%%f"
+    )
+)
 
 :: ビルドの実行
 "!CSC_PATH!" ^
@@ -100,9 +118,7 @@ set "OUTPUT_NAME=%OUTPUT_DIR%\App.exe"
     /langversion:7 ^
     !DEBUG_FLAGS! ^
     /out:!OUTPUT_NAME! ^
-    /reference:lib\DocumentFormat.OpenXml.dll ^
-    /reference:lib\DocumentFormat.OpenXml.Framework.dll ^
-    /reference:lib\System.IO.Packaging.dll ^
+    !LIB_REFERENCES! ^
     /reference:System.dll ^
     /reference:System.Core.dll ^
     /reference:System.Xml.dll ^
@@ -118,12 +134,6 @@ if %ERRORLEVEL% equ 0 (
     copy "lib\*.dll" "%OUTPUT_DIR%\" >nul 2>&1
     
     echo Executable: !OUTPUT_NAME!
-    
-    :: 実行方法を表示
-    echo.
-    echo To run the application:
-    echo   !OUTPUT_NAME!
-    
 ) else (
     echo Build failed with error code %ERRORLEVEL%
     exit /b %ERRORLEVEL%

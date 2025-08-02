@@ -1,3 +1,6 @@
+# setup-packages.ps1
+# packages.config を使った NuGet パッケージの自動ダウンロードと展開スクリプト
+
 $configFile = 'packages.config'
 
 if (Test-Path $configFile) {

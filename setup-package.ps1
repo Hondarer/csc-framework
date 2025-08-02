@@ -1,4 +1,4 @@
-# setup-packages.ps1
+# setup-package.ps1
 # NuGet パッケージの自動ダウンロードと展開スクリプト
 
 param(

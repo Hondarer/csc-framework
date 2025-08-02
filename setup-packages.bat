@@ -22,14 +22,14 @@ if %ERRORLEVEL% neq 0 (
     echo.
 )
 
-:: PowerShell スクリプトでpackages.configを処理
+:: PowerShell スクリプトで packages.config を処理
 echo Running PowerShell setup script for all packages...
 powershell -ExecutionPolicy Bypass -File "%~dp0setup-packages.ps1"
 
 if %ERRORLEVEL% equ 0 (
     echo.
     echo ========================================
-    echo All packages setup completed successfully!
+    echo All packages setup completed successfully.
     echo ========================================
 ) else (
     echo.

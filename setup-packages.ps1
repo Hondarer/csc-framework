@@ -1,27 +1,29 @@
-$configFile = 'packages.config';
+$configFile = 'packages.config'
+
 if (Test-Path $configFile) {
-    [xml]$config = Get-Content $configFile;
-    $packages = $config.packages.package;
-    $totalPackages = $packages.Count;
-    $currentPackage = 0;
+    [xml]$config = Get-Content $configFile
+    $packages = $config.packages.package
+    $totalPackages = $packages.Count
+    $currentPackage = 0
+
     foreach ($package in $packages) {
         $currentPackage++;
-        Write-Host \"[Package $currentPackage/$totalPackages] Processing: $($package.id)\" -ForegroundColor Yellow;
-        $version = if ($package.version -eq 'latest') { 'latest' } else { $package.version };
-        $targetFramework = if ($package.targetFramework) { $package.targetFramework } else { 'net481' };
+        Write-Host "`n[Package $currentPackage/$totalPackages] Processing: $($package.id)"
+        $version = if ($package.version -eq 'latest') { 'latest' } else { $package.version }
+        $targetFramework = if ($package.targetFramework) { $package.targetFramework } else { 'net48' }
         try {
-            & '.\setup-package.ps1' -PackageName $package.id -Version $version -TargetFramework $targetFramework -ErrorAction Stop;
+            & '.\setup-package.ps1' -PackageName $package.id -Version $version -TargetFramework $targetFramework -ErrorAction Stop
             if (-not $?) {
-                Write-Host \"ERROR: Failed to setup package: $($package.id)\" -ForegroundColor Red;
+                Write-Error "ERROR: Failed to setup package: $($package.id)"
                 exit 1;
             }
         } catch {
-            Write-Host \"ERROR: Exception occurred while setting up package: $($package.id)\" -ForegroundColor Red;
-            Write-Host \"Error: $($_.Exception.Message)\" -ForegroundColor Red;
-            exit 1;
+            Write-Error "ERROR: Exception occurred while setting up package: $($package.id)"
+            Write-Error "Error: $($_.Exception.Message)"
+            exit 1
         }
     }
 } else {
-    Write-Host 'ERROR: packages.config not found!' -ForegroundColor Red;
-    exit 1;
+    Write-Error "ERROR: packages.config not found!"
+    exit 1
 }
